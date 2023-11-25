@@ -1,38 +1,49 @@
-// engine/Card.js
 import { Node } from './Node.js';
 import { Sprite } from './Sprite.js';
 import { Label } from './Label.js';
+
 export class Card {
-    constructor(backCardPath,frontCardPath,index) {
-      this.isFlipped = false;
-      this.node = new Node(index);
-      this.frontFace = new Sprite(frontCardPath);
-      this.backFace = new Sprite(backCardPath)
-      this.label = new Label(index<10 ? "0"+index : index.toString())
-      this.node.addChild(this.frontFace.getImg());
-      this.node.addChild(this.backFace.getImg())
-      this.node.addChild(this.label.getLabel());
-      this.frontFace.turnOff()
-      this.node.getNode().addEventListener('click', () => this.flip3());
+    constructor(backCardPath, frontCardPath, index) {
+        this.isFlipped = false;
+        this.node = new Node(index);
+        this.frontFace = new Sprite(frontCardPath);
+        this.backFace = new Sprite(backCardPath);
+        this.label = new Label(index < 10 ? '0' + index : index.toString());
+        this.node.addChild(this.frontFace.getImg());
+        this.node.addChild(this.backFace.getImg());
+        this.node.addChild(this.label.getLabel());
+        this.frontFace.turnOff();
+        this.label.turnOn();
+
+        this.node.getNode().addEventListener('click', () => this.flipCard());
     }
-    // flip() {
-    //   this.isFlipped = !this.isFlipped;
-    // }
-    isFlipped(){
-      return this.isFlipped
+
+    isFlipped() {
+        return this.isFlipped;
     }
-    render() {
-      console.log(`Rendering card with imagePath: ${this.isFlipped ? this.imagePath : 'assets/yugiohCard.jpeg'}`);
+
+    getCard() {
+        return this.node;
     }
-    getCard(){
-      return this.node
-    }  
-  // checkFlippedCard(){
-  //   for (let card in CARDS){
-  //     if (CARDS.isFlipped){
-  //       return true
-  //     }
-  //   }
-  //   return false
-  // }
+    flipCard() {
+        const duration = 0.5;
+        const tl = gsap.timeline({ onComplete: () => (this.isFlipped = !this.isFlipped) });
+        if (!this.isFlipped) {
+            tl.to([this.label.getLabel(), this.backFace.getImg()], { duration, rotationY: 180, ease: 'power1.inOut' }, 0);
+            tl.to(this.frontFace.getImg(), { duration, opacity: 1, rotationY: 360, ease: 'power1.inOut' }, 0);
+            tl.to([this.label.getLabel(), this.backFace.getImg()], { duration, opacity: 0, ease: 'power1.inOut' }, 0);
+            tl.add(() => {
+                this.label.turnOff(); this.backFace.turnOff()
+                this.frontFace.turnOn()
+            });
+        } else {
+            tl.to(this.frontFace.getImg(), { duration, opacity: 0, rotationY: 180, ease: 'power1.inOut' }, 0);
+            tl.to([this.label.getLabel(), this.backFace.getImg()], { duration, opacity: 1, rotationY: 360, ease: 'power1.inOut' }, 0);
+            tl.add(() => {
+                this.label.turnOn(); this.backFace.turnOn()
+                this.frontFace.turnOff()
+            });
+        }
+    }
+
 }

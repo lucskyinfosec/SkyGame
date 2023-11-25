@@ -1,5 +1,6 @@
 import { Card } from "./engine/Card.js";
-const CARDS=[]
+
+const CARDS = [];
 const GRID_CONTAINER = document.createElement("div");
 const BACK_FACE_PATH = `assets/yugiohCard.jpeg`;
 const FRONT_FACE_PATHS = [
@@ -15,6 +16,10 @@ const FRONT_FACE_PATHS = [
   "winged.jpeg",
 ];
 
+const SCORE_CONTAINER = document.createElement("div");
+const RESTART_BUTTON = document.createElement("button");
+let score = 1000;
+
 function setBackground() {
   document.body.style.backgroundImage = "url('assets/yugiohBackground.jpg')";
   document.body.style.backgroundAttachment = "fixed";
@@ -23,7 +28,7 @@ function setBackground() {
   document.body.style.top = "100px";
 }
 
-function createGridContainer(){
+function createGridContainer() {
   GRID_CONTAINER.id = "cardContainer";
   GRID_CONTAINER.style.display = "grid";
   GRID_CONTAINER.style.width = "700px";
@@ -46,15 +51,70 @@ function centerGridContainer() {
   GRID_CONTAINER.style.marginLeft = `${horizontalMargin}px`;
 }
 
-function createCards(){
+function createScoreContainer() {
+  SCORE_CONTAINER.id = "scoreContainer";
+  SCORE_CONTAINER.style.position = "fixed";
+  SCORE_CONTAINER.style.top = "0";
+  SCORE_CONTAINER.style.left = "0";
+  SCORE_CONTAINER.style.paddingLeft = "20px";
+  SCORE_CONTAINER.style.paddingTop = "20px";
+  SCORE_CONTAINER.style.color = "white";
+  SCORE_CONTAINER.textContent = `Score: ${score}`;
+  SCORE_CONTAINER.style.fontSize = "30px";
+  document.body.appendChild(SCORE_CONTAINER);
+}
+
+function createRestartButton() {
+  RESTART_BUTTON.id = "restartButton";
+  RESTART_BUTTON.textContent = "Restart";
+  RESTART_BUTTON.style.position = "fixed";
+  RESTART_BUTTON.style.top = "40px";
+  RESTART_BUTTON.style.left = "10px";
+  RESTART_BUTTON.style.margin = "10px"
+  RESTART_BUTTON.style.height = "35px"
+  RESTART_BUTTON.style.width = "140px"
+  RESTART_BUTTON.style.marginTop = "20px";
+  RESTART_BUTTON.addEventListener("click", restartGame);
+  document.body.appendChild(RESTART_BUTTON);
+}
+
+function updateScore() {
+  SCORE_CONTAINER.textContent = `Score: ${score}`;
+}
+
+function createCards() {
   const frontFacesTemp = [...FRONT_FACE_PATHS, ...FRONT_FACE_PATHS].sort(() => Math.random() - 0.5);
   const totalCards = frontFacesTemp.length;
   for (let i = 1; i <= totalCards; i++) {
-    let card = new Card(BACK_FACE_PATH, "assets/"+frontFacesTemp[i - 1], i);
+    let card = new Card(BACK_FACE_PATH, "assets/" + frontFacesTemp[i - 1], i);
     GRID_CONTAINER.appendChild(card.getCard().getNode());
-    CARDS.push(card)
+    CARDS.push(card);
   }
 }
+
+function dealCards() {
+  const tl = gsap.timeline({ onComplete: () => null });
+  CARDS.forEach((card, index) => {
+    const x = window.innerWidth;
+    const y = window.innerHeight;
+    tl.from(card.getCard().getNode(), { duration: 0.2, x, y, ease: "power1.out" }, `card${index}`);
+  });
+}
+
+function restartGame() {
+  score = 1000;
+  updateScore();
+  CARDS.forEach((card) => {
+    GRID_CONTAINER.removeChild(card.getCard().getNode());
+  });
+  CARDS.length = 0;
+  createCards();
+  dealCards();
+}
+
 setBackground();
 createGridContainer();
+createScoreContainer();
+createRestartButton();
 createCards();
+dealCards();
